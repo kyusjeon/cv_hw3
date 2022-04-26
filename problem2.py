@@ -1,3 +1,4 @@
+from cv2 import threshold
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import time
@@ -38,15 +39,31 @@ def filter_img(img, fil):
     
     return  filtered
 
-log = laplacian_of_gaussian(6, 19)
-plt.imshow(log)
-re = filter_img(img, log)
-
 def track_scale(img, sigma, size, threshold):
     log = laplacian_of_gaussian(sigma, size)
     blob_img = filter_img(img, log)
+    v_max = blob_img.max()
+    mask = blob_img > v_max * threshold
     
-    return blob_img
+    return mask, v_max
 
-simga_list = np.arange(1,7,1)
+sigma_list = np.arange(1,7,1)
 fil_max_scale = list()
+size = 19
+thr = 0.5
+
+fig, ax = plt.subplots(1, dpi=400)
+ax.imshow(img, cmap='gray')
+ax.axis('off')
+for sigma in sigma_list:
+    mask, v_max = track_scale(img, sigma, size, thr)
+    fil_max_scale.append(v_max)
+    for y,x in np.argwhere(mask == True):
+        circ = mpl.patches.Circle((x, y), sigma, color='red', fill=False)
+        ax.add_patch(circ)
+plt.show()
+
+plt.figure()
+plt.plot()
+plt.show()
+
