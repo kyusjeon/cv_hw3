@@ -29,7 +29,7 @@ def filter_img(img, fil):
     fil = fil.astype(float)    # convert correctly
     img = img.astype(float)            # convert correctly
     # this holds the end result
-    filtered = np.zeros_like(img)
+    filtered = np.zeros_like(img)+ -0.1
     width = int((fil.shape[1]-1)/2)
     height = int((fil.shape[0]-1)/2)
     # do the filtering
@@ -47,10 +47,10 @@ def track_scale(img, sigma, size, threshold):
     
     return mask, v_max
 
-sigma_list = np.arange(1,7,1)
+sigma_list = np.arange(1,11,1)
 fil_max_scale = list()
 size = 19
-thr = 0.5
+thr = 0.7
 
 fig, ax = plt.subplots(1, dpi=400)
 ax.imshow(img, cmap='gray')
@@ -64,6 +64,6 @@ for sigma in sigma_list:
 plt.show()
 
 plt.figure()
-plt.plot()
+plt.plot(fil_max_scale)
 plt.show()
 
