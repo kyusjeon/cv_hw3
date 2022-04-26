@@ -54,3 +54,59 @@ window = np.ones((win_size_list[-1], win_size_list[-1]))
 hariss_a = filter(window, filtered_x*filtered_x)
 hariss_b = filter(window, filtered_x*filtered_y)
 hariss_c = filter(window, filtered_y*filtered_y)
+
+def harris_M(a,b,c):
+    met = np.array([[a, b],
+          [b, c]]).transpose(2,3,0,1)
+
+    return met
+
+def harris_oper(a,b,c):
+    oper = np.nan_to_num((a * c - b * b)/(a + c))
+
+    return oper
+
+def cornerDetect(img, winSize=7, type=0):
+    start_time = time.time()
+    filtered_x = filter(filter_sobelx, img)
+    filtered_y = filter(filter_sobely, img)
+
+    window = np.ones((win_size_list[0], win_size_list[0]))
+
+    harris_a = filter(window, filtered_x*filtered_x)
+    harris_b = filter(window, filtered_x*filtered_y)
+    harris_c = filter(window, filtered_y*filtered_y)
+
+    # Eigenvalue
+    if type == 0:
+        harris_m = harris_M(harris_a, harris_b, harris_c)
+        eig_val, eig_vec = np.linalg.eig(harris_m)
+
+        return eig_val.min(axis=2)
+
+    # Harris
+    elif type == 1:
+        harris_h = harris_oper(harris_a, harris_b, harris_c)
+
+        return harris_h
+    
+time_list_eig, time_list_h = list(), list()
+
+for win_size in win_size_list :
+    start_time = time.time()
+    dection = cornerDetect(img, win_size, type=0)
+    end_time = time.time()
+    time_list_eig.append(end_time - start_time)
+
+    print('Window Size = ', win_size)
+    print('Time = ', time_list_eig[-1])
+    plt.figure(None, figsize=(16,9))
+    plt.imshow(dection, cmap='gray')
+    plt.show()
+    
+response = requests.get("https://miro.medium.com/max/700/1*KvDEGIpfwdJtUFwB5acYEA.png")
+cimg = Image.open(BytesIO(response.content))
+cimg = cimg.convert('RGB')
+cimg.save("corner_cimg.png")
+
+cimg = mpl.pyplot.imread("corner_cimg.png")
