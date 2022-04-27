@@ -52,6 +52,16 @@ fil_max_scale = list()
 size = 19
 thr = 0.7
 
+# filter show()
+log = laplacian_of_gaussian(1, size)
+fig = plt.figure(None, figsize=(10, 10))
+ax = fig.gca(projection='3d')
+x = np.arange(0, log.shape[1], 1)
+y = np.arange(0, log.shape[0], 1)
+xx, yy = np.meshgrid(x, y)
+ax.plot_surface(xx, yy, log,cmap='gray') #how to plot this surface?
+plt.show()
+
 fig, ax = plt.subplots(1, dpi=400)
 ax.imshow(img, cmap='gray')
 ax.axis('off')

@@ -35,16 +35,27 @@ def filter(weights,roi):
 filtered_x = filter(filter_sobelx/8, img)
 filtered_y = filter(filter_sobely/8, img)
 
-def cal_temperature(img):
+def sobel_temperature(img):
     filtered_x = filter(filter_sobelx/8, img)
+    filtered_xx = filter(filter_sobelx/8, filtered_x)
     filtered_y = filter(filter_sobely/8, img)
-    temperature = img + filtered_x + filtered_y
+    filtered_yy = filter(filter_sobely/8, filtered_y)
+    temperature = img + filtered_xx + filtered_yy
     temperature /= temperature.max()
     
     return temperature
 
+def cal_temperature(img):
+    h, w = img.shape
+    for _i in np.arange(1,h - 1,1):
+        for _j in np.arange(1,w - 1,1):
+            img[_i, _j] += (img[_i - 1, _j] - 2 * img[_i, _j] + img[_i + 1, _j]) / 2**2 + (img[_i, _j - 1] - 2 * img[_i, _j] + img[_i, _j + 1]) / 2**2
+
+    return img / img.max()
+
 for _i in range(100):
     img = cal_temperature(img)
-    if _i // 10 == 0:
+    print(_i)
+    if _i % 10 == 0:
         plt.imshow(img, cmap='gray')
         plt.show()
