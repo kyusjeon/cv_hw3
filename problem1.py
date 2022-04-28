@@ -49,11 +49,21 @@ filter_sobely = np.array([
 filtered_x = filter(filter_sobelx, img)
 filtered_y = filter(filter_sobely, img)
 
-window = np.ones((win_size_list[-1], win_size_list[-1]))
+def gkern(l,):
+    """\
+    creates gaussian kernel with side length `l` and a sigma of `sig`
+    """
+    sig = int((l-1)/2)
+    ax = np.linspace(-(l - 1) / 2., (l - 1) / 2., l)
+    gauss = np.exp(-0.5 * np.square(ax) / np.square(sig))
+    kernel = np.outer(gauss, gauss)
+    return kernel / np.sum(kernel)
 
-hariss_a = filter(window, filtered_x*filtered_x)
-hariss_b = filter(window, filtered_x*filtered_y)
-hariss_c = filter(window, filtered_y*filtered_y)
+# window = gkern((win_size_list[-1], win_size_list[-1]))
+
+# hariss_a = filter(window, filtered_x*filtered_x)
+# hariss_b = filter(window, filtered_x*filtered_y)
+# hariss_c = filter(window, filtered_y*filtered_y)
 
 def harris_M(a,b,c):
     met = np.array([[a, b],
@@ -71,7 +81,7 @@ def cornerDetect(img, winSize=7, type=0):
     filtered_x = filter(filter_sobelx, img)
     filtered_y = filter(filter_sobely, img)
 
-    window = np.ones((win_size_list[0], win_size_list[0]))
+    window = gkern(winSize)
 
     harris_a = filter(window, filtered_x*filtered_x)
     harris_b = filter(window, filtered_x*filtered_y)
@@ -104,9 +114,33 @@ for win_size in win_size_list :
     plt.imshow(dection, cmap='gray')
     plt.show()
     
+dection = cornerDetect(img, win_size_list[0], type=0)
+
 response = requests.get("https://miro.medium.com/max/700/1*KvDEGIpfwdJtUFwB5acYEA.png")
 cimg = Image.open(BytesIO(response.content))
 cimg = cimg.convert('RGB')
 cimg.save("corner_cimg.png")
 
 cimg = mpl.pyplot.imread("corner_cimg.png")
+
+
+a = gkern(21)
+
+x = np.linspace (0, 50, 1000)
+y = 0.75 * np.sin(x)
+
+peaks = np.argwhere((y[1:-1] > y[:-2]) * (y[1:-1] > y[2:]))
+dips = np.where((y[1:-1] < y[:-2]) * (y[1:-1] < y[2:]))[0] + 1
+
+plt.plot (x, y)
+plt.plot (x[peaks], y[peaks], 'o')
+plt.plot (x[dips], y[dips], 'o')
+
+plt.show()
+
+y = dection
+y = np.where(y>y.max()*0.3, y, y.max()*0.3)
+peaks = np.where((y[1:-1,1:-1] > y[:-2,1:-1]) * (y[1:-1,1:-1] > y[2:,1:-1]) * (y[1:-1, 1:-1] > y[1:-1, :-2]) * (y[1:-1,1:-1] > y[1:-1,2:]),1,0)
+plt.figure(dpi=500)
+plt.imshow(peaks, cmap='gray')
+plt.savefig('output.png')
